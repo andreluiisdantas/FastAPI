@@ -1,8 +1,14 @@
-from fastapi import FastAPI, HTTPException, status, Response
+from fastapi import FastAPI, HTTPException, status, Response, Depends
 from models import PersonagemToyStory
-from typing import Optional
+from typing import Optional, Any
 
-app = FastAPI() #Variavel para instanciar o FastAPI() e não precisar escrever o FastAPI e sim apenas o app
+app = FastAPI(title = "API dos personagens de Toy Story - Andre Dantas DS18", version = "0.0.1", description = "API feita na aula para aprnder FastAPI") #Variavel para instanciar o FastAPI() e não precisar escrever o FastAPI e sim apenas o app
+
+def fake_db():
+    try:
+        print("Conectando com o banco")
+    finally:
+        print("Fechando o banco")
 
 personagens = {
     1 : {
@@ -25,10 +31,10 @@ async def raiz():
     return {"Mensagem": "Hello World!"}  
 
 @app.get("/personagens")
-async def get_personagens():
+async def get_personagens(db: Any = Depends(fake_db)):
     return personagens
 
-@app.get("/personagens/{personagem_id}")
+@app.get("/personagens/{personagem_id}", description="Retorna o personagem com um ID especifico", summary="Retorna um personagem")
 async def get_personagem(personagem_id: int):
     try:
         personagem = personagens[personagem_id]
@@ -60,6 +66,11 @@ async def delete_personagem(personagem_id: int):
         return Response(status_code=status.HTTP_204_NO_CONTENT)
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Personagem não encontrado")
+    
+@app.get("/calcular")
+async def calcular(a: int, b: int):
+    soma = a + b
+    return {"Resultado": soma}
 
 if __name__ == "__main__":
     import uvicorn
